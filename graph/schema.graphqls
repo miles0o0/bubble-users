@@ -1,46 +1,28 @@
-type Query {
-    helloWorld: String!
-    getUserData(userId: ID!): User!
-    getFriends(userId: ID!): [User!]!
-    getDMs(userId: ID!, friendId: ID!): [Message!]!
-    getSettings(userId: ID!): Settings!
-}
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
 
-type Mutation {
-    login(username: String!, password: String!): LoginResponse!
-    refresh(refreshToken: String!): LoginResponse!
-    logout(userId: ID!): Boolean!
-    setSettings(userId: ID!, settings: SettingsInput!): Settings!
-}
-
-type LoginResponse {
-    token: String!
-    user: User!
+type Todo {
+  id: ID!
+  text: String!
+  done: Boolean!
+  user: User!
 }
 
 type User {
-    id: ID!
-    username: String!
-    email: String!
-    friends: [User!]!
-    dms: [Message!]!
-    settings: Settings!
+  id: ID!
+  name: String!
 }
 
-type Message {
-    id: ID!
-    senderId: ID!
-    receiverId: ID!
-    content: String!
-    timestamp: String!
+type Query {
+  todos: [Todo!]!
 }
 
-type Settings {
-    theme: String!
-    notifications: Boolean!
+input NewTodo {
+  text: String!
+  userId: String!
 }
 
-input SettingsInput {
-    theme: String!
-    notifications: Boolean!
+type Mutation {
+  createTodo(input: NewTodo!): Todo!
 }

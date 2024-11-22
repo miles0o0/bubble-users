@@ -6,61 +6,34 @@ package graph
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	main "users"
-	"users/graph/generated"
+	"math/big"
+	"users/graph/model"
 )
 
-// Login is the resolver for the login field.
-func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*main.LoginResponse, error) {
-	panic(fmt.Errorf("not implemented: Login - login"))
+// CreateTodo is the resolver for the createTodo field.
+func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
+	randNumber, _ := rand.Int(rand.Reader, big.NewInt(100))
+	todo := &model.Todo{
+		Text: input.Text,
+		ID:   fmt.Sprintf("T%d", randNumber),
+		User: &model.User{ID: input.UserID, Name: "user " + input.UserID},
+	}
+	r.todos = append(r.todos, todo)
+	return todo, nil
 }
 
-// Refresh is the resolver for the refresh field.
-func (r *mutationResolver) Refresh(ctx context.Context, refreshToken string) (*main.LoginResponse, error) {
-	panic(fmt.Errorf("not implemented: Refresh - refresh"))
+// Todos is the resolver for the todos field.
+func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
+	return r.todos, nil
 }
 
-// Logout is the resolver for the logout field.
-func (r *mutationResolver) Logout(ctx context.Context, userID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Logout - logout"))
-}
+// Mutation returns MutationResolver implementation.
+func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
-// SetSettings is the resolver for the setSettings field.
-func (r *mutationResolver) SetSettings(ctx context.Context, userID string, settings main.SettingsInput) (*main.Settings, error) {
-	panic(fmt.Errorf("not implemented: SetSettings - setSettings"))
-}
-
-// HelloWorld is the resolver for the helloWorld field.
-func (r *queryResolver) HelloWorld(ctx context.Context) (string, error) {
-	return "Hello, World!", nil
-}
-
-// GetUserData is the resolver for the getUserData field.
-func (r *queryResolver) GetUserData(ctx context.Context, userID string) (*main.User, error) {
-	panic(fmt.Errorf("not implemented: GetUserData - getUserData"))
-}
-
-// GetFriends is the resolver for the getFriends field.
-func (r *queryResolver) GetFriends(ctx context.Context, userID string) ([]*main.User, error) {
-	panic(fmt.Errorf("not implemented: GetFriends - getFriends"))
-}
-
-// GetDMs is the resolver for the getDMs field.
-func (r *queryResolver) GetDMs(ctx context.Context, userID string, friendID string) ([]*main.Message, error) {
-	panic(fmt.Errorf("not implemented: GetDMs - getDMs"))
-}
-
-// GetSettings is the resolver for the getSettings field.
-func (r *queryResolver) GetSettings(ctx context.Context, userID string) (*main.Settings, error) {
-	panic(fmt.Errorf("not implemented: GetSettings - getSettings"))
-}
-
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
-
-// Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+// Query returns QueryResolver implementation.
+func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
