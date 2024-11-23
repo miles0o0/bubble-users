@@ -1,7 +1,3 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
 type Todo {
   id: ID!
   text: String!
@@ -12,10 +8,37 @@ type Todo {
 type User {
   id: ID!
   name: String!
+  username: String!
+  email: String!
+  friends: [User!]!
+  dms: [Message!]!
+  settings: Settings!
+}
+
+type Message {
+  id: ID!
+  senderId: ID!
+  receiverId: ID!
+  content: String!
+  timestamp: String!
+}
+
+type Settings {
+  theme: String!
+  notifications: Boolean!
+}
+
+input SettingsInput {
+  theme: String!
+  notifications: Boolean!
 }
 
 type Query {
   todos: [Todo!]!
+  getUserData(userId: ID!): User!
+  getFriends(userId: ID!): [User!]!
+  getDMs(userId: ID!, friendId: ID!): [Message!]!
+  getSettings(userId: ID!): Settings!
 }
 
 input NewTodo {
@@ -25,4 +48,14 @@ input NewTodo {
 
 type Mutation {
   createTodo(input: NewTodo!): Todo!
+  login(username: String!, password: String!): LoginResponse!
+  refresh(refreshToken: String!): LoginResponse!
+  logout(userId: ID!): Boolean!
+  setSettings(userId: ID!, settings: SettingsInput!): Settings!
+}
+
+type LoginResponse {
+  token: String!
+  refresh: String!
+  user: User
 }

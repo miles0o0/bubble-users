@@ -2,6 +2,20 @@
 
 package model
 
+type LoginResponse struct {
+	Token   string `json:"token"`
+	Refresh string `json:"refresh"`
+	User    *User  `json:"user,omitempty"`
+}
+
+type Message struct {
+	ID         string `json:"id"`
+	SenderID   string `json:"senderId"`
+	ReceiverID string `json:"receiverId"`
+	Content    string `json:"content"`
+	Timestamp  string `json:"timestamp"`
+}
+
 type Mutation struct {
 }
 
@@ -13,6 +27,16 @@ type NewTodo struct {
 type Query struct {
 }
 
+type Settings struct {
+	Theme         string `json:"theme"`
+	Notifications bool   `json:"notifications"`
+}
+
+type SettingsInput struct {
+	Theme         string `json:"theme"`
+	Notifications bool   `json:"notifications"`
+}
+
 type Todo struct {
 	ID   string `json:"id"`
 	Text string `json:"text"`
@@ -21,6 +45,11 @@ type Todo struct {
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID       string     `json:"id"`
+	Name     string     `json:"name"`
+	Username string     `json:"username"`
+	Email    string     `json:"email"`
+	Friends  []*User    `json:"friends"`
+	Dms      []*Message `json:"dms"`
+	Settings *Settings  `json:"settings"`
 }

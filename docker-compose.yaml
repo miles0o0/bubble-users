@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   app:
     build:
@@ -5,4 +7,20 @@ services:
       dockerfile: Dockerfile
     image: bubble-user
     ports:
+      - "8081:8080"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - DB_VENDOR=h2
+    ports:
       - "8080:8080"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    command: ["start-dev"]
+
+volumes:
+  keycloak_data:
