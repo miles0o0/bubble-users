@@ -55,7 +55,8 @@ type Mutation {
 }
 
 type LoginResponse {
-  token: String!
-  refresh: String!
-  user: User
+  access_Token: String!
+  refresh_Token: String!
+  expires_In: Int!
+  token_Type: String!
 }
