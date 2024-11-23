@@ -3,9 +3,10 @@
 package model
 
 type LoginResponse struct {
-	Token   string `json:"token"`
-	Refresh string `json:"refresh"`
-	User    *User  `json:"user,omitempty"`
+	AccessToken  string `json:"access_Token"`
+	RefreshToken string `json:"refresh_Token"`
+	ExpiresIn    int    `json:"expires_In"`
+	TokenType    string `json:"token_Type"`
 }
 
 type Message struct {

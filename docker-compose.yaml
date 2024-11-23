@@ -3,7 +3,7 @@ services:
     image: user-service:latest
     container_name: user-service
     ports:
-      - "8081:8080"
+      - "3080:3080"
     environment:
       - KEYCLOAK_URL=${KEYCLOAK_URL}
       - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}

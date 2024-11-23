@@ -11,7 +11,7 @@ import (
 	"github.com/miles0o0/bubble-users/graph"
 )
 
-const defaultPort = "8080"
+const defaultPort = "3080"
 
 func main() {
 
