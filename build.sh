@@ -22,10 +22,10 @@ else
 fi
 
 # Build the Docker image using the cache
-docker build -t bubble-user .
+docker build --cache-from=user-service:latest -t user-service .
 
 # Run the Docker Compose services
-docker compose up -d
+docker compose --env-file .env up -d
 
 # Wait for the container to be ready on port 8080
 echo "Waiting for the container to be ready on port 8080..."

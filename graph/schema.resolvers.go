@@ -7,15 +7,12 @@ package graph
 import (
 	"context"
 	"crypto/rand"
-	"encoding/json"
 	"fmt"
+	"log"
 	"math/big"
-	"net/http"
-	"net/url"
-	"os"
-	"strings"
 
 	"github.com/miles0o0/bubble-users/graph/model"
+	"github.com/miles0o0/bubble-users/util"
 )
 
 // CreateTodo is the resolver for the createTodo field.
@@ -32,57 +29,27 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.LoginResponse, error) {
-	keycloakURL := os.Getenv("KEYCLOAK_URL")
-	keycloakClientID := os.Getenv("KEYCLOAK_CLIENT_ID")
-	keycloakSecret := os.Getenv("KEYCLOAK_CLIENT_SECRET")
+	// Validate input
+	if username == "" || password == "" {
+		return nil, fmt.Errorf("username and password must not be empty")
+	}
 
-	//setting up request body for authentication
-	data := url.Values{}
-	data.Set("grant_type", "password")
-	data.Set("client_id", keycloakClientID)
-	data.Set("client_secret", keycloakSecret)
-	data.Set("username", username)
-	data.Set("password", password)
+	// Log the login attempt (without sensitive data)
+	log.Printf("Login attempt for username: %s", username)
 
-	req, err := http.NewRequest("POST", keycloakURL, strings.NewReader(data.Encode()))
-
-	// data could be bad, noughty!
+	// Use the util.UserLogin function to handle the login
+	response, err := util.UserLogin(ctx, username, password)
 	if err != nil {
-		return nil, fmt.Errorf("request creation faliure: %w", err)
+		// Log the error and return it
+		log.Printf("Login failed for username: %s, error: %v", username, err)
+		return nil, fmt.Errorf("login failed: %w", err)
 	}
 
-	// body acceted with this content type, keycloak no likey other type
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	// Log successful login
+	log.Printf("Login successful for username: %s", username)
 
-	// SEND IT
-	client := &http.Client{}
-	resp, err := client.Do(req)
-
-	// auth oopsie
-	if err != nil {
-		return nil, fmt.Errorf("auth request faliure: %w", err)
-	}
-
-	defer resp.Body.Close()
-
-	// more response oopsie checks
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("login error: status %d", resp.StatusCode)
-	}
-
-	var tokenResponse struct {
-		AccessToken  string `json:"access_token"`
-		RefreshToken string `json:"refresh_token"`
-		IDToken      string `json:"id_token"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&tokenResponse); err != nil {
-		return nil, fmt.Errorf("failed to parse response: %w", err)
-	}
-
-	return &model.LoginResponse{
-		Token:   tokenResponse.AccessToken,
-		Refresh: tokenResponse.RefreshToken,
-	}, nil
+	// Return the response
+	return response, nil
 }
 
 // Refresh is the resolver for the refresh field.
