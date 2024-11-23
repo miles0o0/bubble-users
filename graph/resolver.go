@@ -1,6 +1,6 @@
 package graph
 
-import "users/graph/model"
+import "github.com/miles0o0/bubble-users/graph/model"
 
 // This file will not be regenerated automatically.
 //

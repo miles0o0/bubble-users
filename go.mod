@@ -1,9 +1,10 @@
-module users
+module github.com/miles0o0/bubble-users
 
 go 1.23.2
 
 require (
 	github.com/99designs/gqlgen v0.17.55
+	github.com/joho/godotenv v1.5.1
 	github.com/vektah/gqlparser/v2 v2.5.18
 )
 

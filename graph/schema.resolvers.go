@@ -7,9 +7,15 @@ package graph
 import (
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"math/big"
-	"users/graph/model"
+	"net/http"
+	"net/url"
+	"os"
+	"strings"
+
+	"github.com/miles0o0/bubble-users/graph/model"
 )
 
 // CreateTodo is the resolver for the createTodo field.
@@ -24,9 +30,99 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) 
 	return todo, nil
 }
 
+// Login is the resolver for the login field.
+func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.LoginResponse, error) {
+	keycloakURL := os.Getenv("KEYCLOAK_URL")
+	keycloakClientID := os.Getenv("KEYCLOAK_CLIENT_ID")
+	keycloakSecret := os.Getenv("KEYCLOAK_CLIENT_SECRET")
+
+	//setting up request body for authentication
+	data := url.Values{}
+	data.Set("grant_type", "password")
+	data.Set("client_id", keycloakClientID)
+	data.Set("client_secret", keycloakSecret)
+	data.Set("username", username)
+	data.Set("password", password)
+
+	req, err := http.NewRequest("POST", keycloakURL, strings.NewReader(data.Encode()))
+
+	// data could be bad, noughty!
+	if err != nil {
+		return nil, fmt.Errorf("request creation faliure: %w", err)
+	}
+
+	// body acceted with this content type, keycloak no likey other type
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// SEND IT
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	// auth oopsie
+	if err != nil {
+		return nil, fmt.Errorf("auth request faliure: %w", err)
+	}
+
+	defer resp.Body.Close()
+
+	// more response oopsie checks
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("login error: status %d", resp.StatusCode)
+	}
+
+	var tokenResponse struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+		IDToken      string `json:"id_token"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&tokenResponse); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	return &model.LoginResponse{
+		Token:   tokenResponse.AccessToken,
+		Refresh: tokenResponse.RefreshToken,
+	}, nil
+}
+
+// Refresh is the resolver for the refresh field.
+func (r *mutationResolver) Refresh(ctx context.Context, refreshToken string) (*model.LoginResponse, error) {
+	panic(fmt.Errorf("not implemented: Refresh - refresh"))
+}
+
+// Logout is the resolver for the logout field.
+func (r *mutationResolver) Logout(ctx context.Context, userID string) (bool, error) {
+	panic(fmt.Errorf("not implemented: Logout - logout"))
+}
+
+// SetSettings is the resolver for the setSettings field.
+func (r *mutationResolver) SetSettings(ctx context.Context, userID string, settings model.SettingsInput) (*model.Settings, error) {
+	panic(fmt.Errorf("not implemented: SetSettings - setSettings"))
+}
+
 // Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
 	return r.todos, nil
+}
+
+// GetUserData is the resolver for the getUserData field.
+func (r *queryResolver) GetUserData(ctx context.Context, userID string) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: GetUserData - getUserData"))
+}
+
+// GetFriends is the resolver for the getFriends field.
+func (r *queryResolver) GetFriends(ctx context.Context, userID string) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented: GetFriends - getFriends"))
+}
+
+// GetDMs is the resolver for the getDMs field.
+func (r *queryResolver) GetDMs(ctx context.Context, userID string, friendID string) ([]*model.Message, error) {
+	panic(fmt.Errorf("not implemented: GetDMs - getDMs"))
+}
+
+// GetSettings is the resolver for the getSettings field.
+func (r *queryResolver) GetSettings(ctx context.Context, userID string) (*model.Settings, error) {
+	panic(fmt.Errorf("not implemented: GetSettings - getSettings"))
 }
 
 // Mutation returns MutationResolver implementation.
