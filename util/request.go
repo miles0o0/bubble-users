@@ -20,7 +20,7 @@ type KeycloakConfig struct {
 }
 
 // LoadConfig loads and validates Keycloak configuration from environment variables.
-func LoadConfig() (*KeycloakConfig, error) {
+func loadConfig() (*KeycloakConfig, error) {
 	keycloakURL := os.Getenv("KEYCLOAK_URL")
 	keycloakRealm := os.Getenv("KEYCLOAK_REALM")
 	keycloakClientID := os.Getenv("KEYCLOAK_CLIENT_ID")
@@ -39,7 +39,7 @@ func LoadConfig() (*KeycloakConfig, error) {
 }
 
 // MakeRequest sends an HTTP request to Keycloak and handles the response.
-func MakeRequest(ctx context.Context, method, endpoint string, data url.Values) ([]byte, int, error) {
+func makeRequest(ctx context.Context, method, endpoint string, data url.Values) ([]byte, int, error) {
 	// Create the HTTP request
 	req, err := http.NewRequestWithContext(ctx, method, endpoint, strings.NewReader(data.Encode()))
 	if err != nil {

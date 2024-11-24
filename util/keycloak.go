@@ -12,7 +12,7 @@ import (
 
 func KeycloakLogin(ctx context.Context, username, password string) (*model.LoginResponse, error) {
 	// Load Keycloak configuration
-	config, err := LoadConfig()
+	config, err := loadConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func KeycloakLogin(ctx context.Context, username, password string) (*model.Login
 
 	// Make the request
 	tokenURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/token", config.URL, config.Realm)
-	body, statusCode, err := MakeRequest(ctx, "POST", tokenURL, data)
+	body, statusCode, err := makeRequest(ctx, "POST", tokenURL, data)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func KeycloakLogin(ctx context.Context, username, password string) (*model.Login
 
 func KeycloakLogout(ctx context.Context, refreshToken string) (bool, error) {
 	// Load Keycloak configuration
-	config, err := LoadConfig()
+	config, err := loadConfig()
 	if err != nil {
 		return false, err
 	}
@@ -61,7 +61,7 @@ func KeycloakLogout(ctx context.Context, refreshToken string) (bool, error) {
 
 	// Make the request
 	logoutURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/logout", config.URL, config.Realm)
-	_, statusCode, err := MakeRequest(ctx, "POST", logoutURL, data)
+	_, statusCode, err := makeRequest(ctx, "POST", logoutURL, data)
 	if err != nil {
 		return false, err
 	}
@@ -76,7 +76,7 @@ func KeycloakLogout(ctx context.Context, refreshToken string) (bool, error) {
 
 func KeycloakRefresh(ctx context.Context, refreshToken string) (*model.LoginResponse, error) {
 	// Load Keycloak configuration
-	config, err := LoadConfig()
+	config, err := loadConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func KeycloakRefresh(ctx context.Context, refreshToken string) (*model.LoginResp
 
 	// Make the request
 	tokenURL := fmt.Sprintf("%s/realms/%s/protocol/openid-connect/token", config.URL, config.Realm)
-	body, statusCode, err := MakeRequest(ctx, "POST", tokenURL, data)
+	body, statusCode, err := makeRequest(ctx, "POST", tokenURL, data)
 	if err != nil {
 		return nil, err
 	}
