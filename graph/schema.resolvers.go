@@ -6,26 +6,11 @@ package graph
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
 	"log"
-	"math/big"
 
 	"github.com/miles0o0/bubble-users/graph/model"
-	"github.com/miles0o0/bubble-users/util"
 )
-
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	randNumber, _ := rand.Int(rand.Reader, big.NewInt(100))
-	todo := &model.Todo{
-		Text: input.Text,
-		ID:   fmt.Sprintf("T%d", randNumber),
-		User: &model.User{ID: input.UserID, Name: "user " + input.UserID},
-	}
-	r.todos = append(r.todos, todo)
-	return todo, nil
-}
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.LoginResponse, error) {
@@ -38,7 +23,7 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	log.Printf("Login attempt for username: %s", username)
 
 	// Use the util.UserLogin function to handle the login
-	response, err := util.UserLogin(ctx, username, password)
+	response, err := util.keycloakLogin(ctx, username, password)
 	if err != nil {
 		// Log the error and return it
 		log.Printf("Login failed for username: %s, error: %v", username, err)
@@ -58,8 +43,12 @@ func (r *mutationResolver) Refresh(ctx context.Context, refreshToken string) (*m
 }
 
 // Logout is the resolver for the logout field.
-func (r *mutationResolver) Logout(ctx context.Context, userID string) (bool, error) {
-	panic(fmt.Errorf("not implemented: Logout - logout"))
+func (r *mutationResolver) Logout(ctx context.Context, refreshToken string) (bool, error) {
+	if refreshToken == "" {
+		return false, fmt.Errorf("refresh token missing")
+	}
+
+	return util.keycloakLogout(ctx, refreshToken)
 }
 
 // SetSettings is the resolver for the setSettings field.

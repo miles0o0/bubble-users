@@ -6,6 +6,7 @@ type LoginResponse struct {
 	AccessToken  string `json:"access_Token"`
 	RefreshToken string `json:"refresh_Token"`
 	ExpiresIn    int    `json:"expires_In"`
+	SessionState string `json:"session_state"`
 	TokenType    string `json:"token_Type"`
 }
 

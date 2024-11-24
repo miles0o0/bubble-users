@@ -51,6 +51,7 @@ type ComplexityRoot struct {
 		AccessToken  func(childComplexity int) int
 		ExpiresIn    func(childComplexity int) int
 		RefreshToken func(childComplexity int) int
+		SessionState func(childComplexity int) int
 		TokenType    func(childComplexity int) int
 	}
 
@@ -65,7 +66,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreateTodo  func(childComplexity int, input model.NewTodo) int
 		Login       func(childComplexity int, username string, password string) int
-		Logout      func(childComplexity int, userID string) int
+		Logout      func(childComplexity int, refreshToken string) int
 		Refresh     func(childComplexity int, refreshToken string) int
 		SetSettings func(childComplexity int, userID string, settings model.SettingsInput) int
 	}
@@ -105,7 +106,7 @@ type MutationResolver interface {
 	CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error)
 	Login(ctx context.Context, username string, password string) (*model.LoginResponse, error)
 	Refresh(ctx context.Context, refreshToken string) (*model.LoginResponse, error)
-	Logout(ctx context.Context, userID string) (bool, error)
+	Logout(ctx context.Context, refreshToken string) (bool, error)
 	SetSettings(ctx context.Context, userID string, settings model.SettingsInput) (*model.Settings, error)
 }
 type QueryResolver interface {
@@ -155,6 +156,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LoginResponse.RefreshToken(childComplexity), true
+
+	case "LoginResponse.session_state":
+		if e.complexity.LoginResponse.SessionState == nil {
+			break
+		}
+
+		return e.complexity.LoginResponse.SessionState(childComplexity), true
 
 	case "LoginResponse.token_Type":
 		if e.complexity.LoginResponse.TokenType == nil {
@@ -232,7 +240,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Logout(childComplexity, args["userId"].(string)), true
+		return e.complexity.Mutation.Logout(childComplexity, args["refreshToken"].(string)), true
 
 	case "Mutation.refresh":
 		if e.complexity.Mutation.Refresh == nil {
@@ -597,20 +605,20 @@ func (ec *executionContext) field_Mutation_login_argsPassword(
 func (ec *executionContext) field_Mutation_logout_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Mutation_logout_argsUserID(ctx, rawArgs)
+	arg0, err := ec.field_Mutation_logout_argsRefreshToken(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["userId"] = arg0
+	args["refreshToken"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Mutation_logout_argsUserID(
+func (ec *executionContext) field_Mutation_logout_argsRefreshToken(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-	if tmp, ok := rawArgs["userId"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("refreshToken"))
+	if tmp, ok := rawArgs["refreshToken"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
 	}
 
 	var zeroVal string
@@ -1000,6 +1008,50 @@ func (ec *executionContext) fieldContext_LoginResponse_expires_In(_ context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _LoginResponse_session_state(ctx context.Context, field graphql.CollectedField, obj *model.LoginResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LoginResponse_session_state(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SessionState, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LoginResponse_session_state(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LoginResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _LoginResponse_token_Type(ctx context.Context, field graphql.CollectedField, obj *model.LoginResponse) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LoginResponse_token_Type(ctx, field)
 	if err != nil {
@@ -1374,6 +1426,8 @@ func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, fie
 				return ec.fieldContext_LoginResponse_refresh_Token(ctx, field)
 			case "expires_In":
 				return ec.fieldContext_LoginResponse_expires_In(ctx, field)
+			case "session_state":
+				return ec.fieldContext_LoginResponse_session_state(ctx, field)
 			case "token_Type":
 				return ec.fieldContext_LoginResponse_token_Type(ctx, field)
 			}
@@ -1439,6 +1493,8 @@ func (ec *executionContext) fieldContext_Mutation_refresh(ctx context.Context, f
 				return ec.fieldContext_LoginResponse_refresh_Token(ctx, field)
 			case "expires_In":
 				return ec.fieldContext_LoginResponse_expires_In(ctx, field)
+			case "session_state":
+				return ec.fieldContext_LoginResponse_session_state(ctx, field)
 			case "token_Type":
 				return ec.fieldContext_LoginResponse_token_Type(ctx, field)
 			}
@@ -1473,7 +1529,7 @@ func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Logout(rctx, fc.Args["userId"].(string))
+		return ec.resolvers.Mutation().Logout(rctx, fc.Args["refreshToken"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4522,6 +4578,11 @@ func (ec *executionContext) _LoginResponse(ctx context.Context, sel ast.Selectio
 			}
 		case "expires_In":
 			out.Values[i] = ec._LoginResponse_expires_In(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "session_state":
+			out.Values[i] = ec._LoginResponse_session_state(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

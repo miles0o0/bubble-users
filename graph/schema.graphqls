@@ -34,23 +34,16 @@ input SettingsInput {
 }
 
 type Query {
-  todos: [Todo!]!
   getUserData(userId: ID!): User!
   getFriends(userId: ID!): [User!]!
   getDMs(userId: ID!, friendId: ID!): [Message!]!
   getSettings(userId: ID!): Settings!
 }
 
-input NewTodo {
-  text: String!
-  userId: String!
-}
-
 type Mutation {
-  createTodo(input: NewTodo!): Todo!
   login(username: String!, password: String!): LoginResponse!
   refresh(refreshToken: String!): LoginResponse!
-  logout(userId: ID!): Boolean!
+  logout(refreshToken: String!): Boolean!
   setSettings(userId: ID!, settings: SettingsInput!): Settings!
 }
 
@@ -58,5 +51,6 @@ type LoginResponse {
   access_Token: String!
   refresh_Token: String!
   expires_In: Int!
+  session_state: String!
   token_Type: String!
 }
