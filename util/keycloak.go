@@ -15,7 +15,7 @@ import (
 	"github.com/miles0o0/bubble-users/graph/model"
 )
 
-func keycloakLogin(ctx context.Context, username, password string) (*model.LoginResponse, error) {
+func KeycloakLogin(ctx context.Context, username, password string) (*model.LoginResponse, error) {
 	// **Step 1: Load and validate environment variables**
 	keycloakURL := os.Getenv("KEYCLOAK_URL")
 	keycloakRealm := os.Getenv("KEYCLOAK_REALM")
@@ -76,7 +76,7 @@ func keycloakLogin(ctx context.Context, username, password string) (*model.Login
 	return &tokenResponse, nil
 }
 
-func keycloakLogout(ctx context.Context, refreshToken string) (bool, error) {
+func KeycloakLogout(ctx context.Context, refreshToken string) (bool, error) {
 	// **Step 1: Load and validate environment variables**
 	keycloakURL := os.Getenv("KEYCLOAK_URL")
 	keycloakRealm := os.Getenv("KEYCLOAK_REALM")
@@ -85,7 +85,7 @@ func keycloakLogout(ctx context.Context, refreshToken string) (bool, error) {
 
 	// Validate that all required variables are set
 	if keycloakURL == "" || keycloakRealm == "" || keycloakClientID == "" || keycloakSecret == "" {
-		return 0, fmt.Errorf("missing one or more required environment variables: KEYCLOAK_URL, KEYCLOAK_REALM, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET")
+		return false, fmt.Errorf("missing one or more required environment variables: KEYCLOAK_URL, KEYCLOAK_REALM, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET")
 	}
 
 	// **Step 2: Construct the logout URL**
@@ -100,7 +100,7 @@ func keycloakLogout(ctx context.Context, refreshToken string) (bool, error) {
 	// **Step 4: Create the HTTP request**
 	req, err := http.NewRequestWithContext(ctx, "POST", logoutURL, strings.NewReader(data.Encode()))
 	if err != nil {
-		return 0, fmt.Errorf("failed to create request: %w", err)
+		return false, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -112,12 +112,12 @@ func keycloakLogout(ctx context.Context, refreshToken string) (bool, error) {
 	// **Step 6: Execute the request**
 	resp, err := client.Do(req)
 	if err != nil {
-		return 0, fmt.Errorf("failed to execute logout request: %w", err)
+		return false, fmt.Errorf("failed to execute logout request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// **Step 7: Handle non-200 responses**
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusNoContent {
 		body, _ := io.ReadAll(resp.Body)
 		return false, fmt.Errorf("failed to logout from Keycloak: %s, response: %s", resp.Status, string(body))
 	}

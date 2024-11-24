@@ -10,6 +10,7 @@ import (
 	"log"
 
 	"github.com/miles0o0/bubble-users/graph/model"
+	"github.com/miles0o0/bubble-users/util"
 )
 
 // Login is the resolver for the login field.
@@ -23,7 +24,7 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	log.Printf("Login attempt for username: %s", username)
 
 	// Use the util.UserLogin function to handle the login
-	response, err := util.keycloakLogin(ctx, username, password)
+	response, err := util.KeycloakLogin(ctx, username, password)
 	if err != nil {
 		// Log the error and return it
 		log.Printf("Login failed for username: %s, error: %v", username, err)
@@ -48,17 +49,12 @@ func (r *mutationResolver) Logout(ctx context.Context, refreshToken string) (boo
 		return false, fmt.Errorf("refresh token missing")
 	}
 
-	return util.keycloakLogout(ctx, refreshToken)
+	return util.KeycloakLogout(ctx, refreshToken)
 }
 
 // SetSettings is the resolver for the setSettings field.
 func (r *mutationResolver) SetSettings(ctx context.Context, userID string, settings model.SettingsInput) (*model.Settings, error) {
 	panic(fmt.Errorf("not implemented: SetSettings - setSettings"))
-}
-
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	return r.todos, nil
 }
 
 // GetUserData is the resolver for the getUserData field.
