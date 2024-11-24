@@ -20,9 +20,6 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 		return nil, fmt.Errorf("username and password must not be empty")
 	}
 
-	// Log the login attempt (without sensitive data)
-	log.Printf("Login attempt for username: %s", username)
-
 	// Use the util.UserLogin function to handle the login
 	response, err := util.KeycloakLogin(ctx, username, password)
 	if err != nil {
@@ -40,7 +37,11 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 
 // Refresh is the resolver for the refresh field.
 func (r *mutationResolver) Refresh(ctx context.Context, refreshToken string) (*model.LoginResponse, error) {
-	panic(fmt.Errorf("not implemented: Refresh - refresh"))
+	if refreshToken == "" {
+		return nil, fmt.Errorf("refresh tocken missing")
+	}
+
+	return util.KeycloakRefresh(ctx, refreshToken)
 }
 
 // Logout is the resolver for the logout field.
