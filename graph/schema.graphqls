@@ -36,7 +36,7 @@ input SettingsInput {
 type Query {
   getUserData(userId: ID!): User!
   getFriends(userId: ID!): [User!]!
-  getDMs(userId: ID!, friendId: ID!): [Message!]!
+  getDMs(userId: ID!, friendId: ID): [Message!]!
   getSettings(userId: ID!): Settings!
 }
 

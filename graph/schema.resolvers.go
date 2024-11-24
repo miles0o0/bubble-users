@@ -53,6 +53,16 @@ func (r *mutationResolver) Logout(ctx context.Context, refreshToken string) (boo
 	return util.KeycloakLogout(ctx, refreshToken)
 }
 
+// GetDMs is the resolver for the getDMs field.
+func (r *queryResolver) GetDMs(ctx context.Context, userID string, friendID string) ([]*model.Message, error) {
+	return util.GetDMs(ctx, userID, friendID)
+}
+
+// GetSettings is the resolver for the getSettings field.
+func (r *queryResolver) GetSettings(ctx context.Context, userID string) (*model.Settings, error) {
+	panic(fmt.Errorf("not implemented: GetSettings - getSettings"))
+}
+
 // SetSettings is the resolver for the setSettings field.
 func (r *mutationResolver) SetSettings(ctx context.Context, userID string, settings model.SettingsInput) (*model.Settings, error) {
 	panic(fmt.Errorf("not implemented: SetSettings - setSettings"))
@@ -66,16 +76,6 @@ func (r *queryResolver) GetUserData(ctx context.Context, userID string) (*model.
 // GetFriends is the resolver for the getFriends field.
 func (r *queryResolver) GetFriends(ctx context.Context, userID string) ([]*model.User, error) {
 	panic(fmt.Errorf("not implemented: GetFriends - getFriends"))
-}
-
-// GetDMs is the resolver for the getDMs field.
-func (r *queryResolver) GetDMs(ctx context.Context, userID string, friendID string) ([]*model.Message, error) {
-	panic(fmt.Errorf("not implemented: GetDMs - getDMs"))
-}
-
-// GetSettings is the resolver for the getSettings field.
-func (r *queryResolver) GetSettings(ctx context.Context, userID string) (*model.Settings, error) {
-	panic(fmt.Errorf("not implemented: GetSettings - getSettings"))
 }
 
 // Mutation returns MutationResolver implementation.

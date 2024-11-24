@@ -71,7 +71,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetDMs      func(childComplexity int, userID string, friendID string) int
+		GetDMs      func(childComplexity int, userID string, friendID *string) int
 		GetFriends  func(childComplexity int, userID string) int
 		GetSettings func(childComplexity int, userID string) int
 		GetUserData func(childComplexity int, userID string) int
@@ -109,7 +109,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	GetUserData(ctx context.Context, userID string) (*model.User, error)
 	GetFriends(ctx context.Context, userID string) ([]*model.User, error)
-	GetDMs(ctx context.Context, userID string, friendID string) ([]*model.Message, error)
+	GetDMs(ctx context.Context, userID string, friendID *string) ([]*model.Message, error)
 	GetSettings(ctx context.Context, userID string) (*model.Settings, error)
 }
 
@@ -260,7 +260,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetDMs(childComplexity, args["userId"].(string), args["friendId"].(string)), true
+		return e.complexity.Query.GetDMs(childComplexity, args["userId"].(string), args["friendId"].(*string)), true
 
 	case "Query.getFriends":
 		if e.complexity.Query.GetFriends == nil {
@@ -696,13 +696,13 @@ func (ec *executionContext) field_Query_getDMs_argsUserID(
 func (ec *executionContext) field_Query_getDMs_argsFriendID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (string, error) {
+) (*string, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("friendId"))
 	if tmp, ok := rawArgs["friendId"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
+		return ec.unmarshalOID2ᚖstring(ctx, tmp)
 	}
 
-	var zeroVal string
+	var zeroVal *string
 	return zeroVal, nil
 }
 
@@ -1675,7 +1675,7 @@ func (ec *executionContext) _Query_getDMs(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetDMs(rctx, fc.Args["userId"].(string), fc.Args["friendId"].(string))
+		return ec.resolvers.Query().GetDMs(rctx, fc.Args["userId"].(string), fc.Args["friendId"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5655,6 +5655,22 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	res := graphql.MarshalBoolean(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalID(*v)
 	return res
 }
 
