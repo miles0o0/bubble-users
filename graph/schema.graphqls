@@ -34,10 +34,21 @@ type Query {
 }
 
 type Mutation {
+  # Authentication
   login(username: String!, password: String!): LoginResponse!
   refresh(refreshToken: String!): LoginResponse!
   logout(refreshToken: String!): Boolean!
+  
+  # User Management
+  createUser(name: String!, username: String!, email: String!): User!
+  updateUser(userId: ID!, name: String, username: String, email: String): User!
+  addFriend(userId: ID!, friendId: ID!): User!
+
+  # Settings Management
   setSettings(userId: ID!, settings: SettingsInput!): Settings!
+  
+  # Messaging
+  sendDM(senderId: ID!, receiverId: ID!, content: String!): Message!
 }
 
 type LoginResponse {

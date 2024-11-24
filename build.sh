@@ -29,7 +29,7 @@ docker compose --env-file .env up -d
 
 # Wait for the container to be ready on port 8080
 echo "Waiting for the container to be ready on port 8080..."
-sleep 5
+
 while ! nc -z localhost 8080; do
   sleep 1
 done

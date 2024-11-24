@@ -11,6 +11,7 @@ import (
 
 	"github.com/miles0o0/bubble-users/graph/model"
 	"github.com/miles0o0/bubble-users/util"
+	"github.com/miles0o0/bubble-users/database"	
 )
 
 // Login is the resolver for the login field.
@@ -53,19 +54,42 @@ func (r *mutationResolver) Logout(ctx context.Context, refreshToken string) (boo
 	return util.KeycloakLogout(ctx, refreshToken)
 }
 
-// GetDMs is the resolver for the getDMs field.
-func (r *queryResolver) GetDMs(ctx context.Context, userID string, friendID string) ([]*model.Message, error) {
-	return util.GetDMs(ctx, userID, friendID)
+// CreateUser is the resolver for the createUser field.
+func (r *mutationResolver) CreateUser(ctx context.Context, name string, username string, email string) (*model.User, error) {
+	user := &model.User{
+		Name:     name,
+		Username: username,
+		Email:    email,
+	}
+	err := database.(ctx, user) // Save to DB
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
-// GetSettings is the resolver for the getSettings field.
-func (r *queryResolver) GetSettings(ctx context.Context, userID string) (*model.Settings, error) {
-	panic(fmt.Errorf("not implemented: GetSettings - getSettings"))
+// UpdateUser is the resolver for the updateUser field.
+func (r *mutationResolver) UpdateUser(ctx context.Context, userID string, name *string, username *string, email *string) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: UpdateUser - updateUser"))
+}
+
+// AddFriend is the resolver for the addFriend field.
+func (r *mutationResolver) AddFriend(ctx context.Context, userID string, friendID string) (*model.User, error) {
+	err := database.AddFriend(ctx, userID, friendID) // Save to DB
+	if err != nil {
+		return nil, err
+	}
+	return database.GetUserData(ctx, userID) // Return updated user
 }
 
 // SetSettings is the resolver for the setSettings field.
 func (r *mutationResolver) SetSettings(ctx context.Context, userID string, settings model.SettingsInput) (*model.Settings, error) {
 	panic(fmt.Errorf("not implemented: SetSettings - setSettings"))
+}
+
+// SendDm is the resolver for the sendDM field.
+func (r *mutationResolver) SendDm(ctx context.Context, senderID string, receiverID string, content string) (*model.Message, error) {
+	panic(fmt.Errorf("not implemented: SendDm - sendDM"))
 }
 
 // GetUserData is the resolver for the getUserData field.
@@ -76,6 +100,16 @@ func (r *queryResolver) GetUserData(ctx context.Context, userID string) (*model.
 // GetFriends is the resolver for the getFriends field.
 func (r *queryResolver) GetFriends(ctx context.Context, userID string) ([]*model.User, error) {
 	panic(fmt.Errorf("not implemented: GetFriends - getFriends"))
+}
+
+// GetDMs is the resolver for the getDMs field.
+func (r *queryResolver) GetDMs(ctx context.Context, userID string, friendID *string) ([]*model.Message, error) {
+	return util.GetDMs(ctx, userID, friendID)
+}
+
+// GetSettings is the resolver for the getSettings field.
+func (r *queryResolver) GetSettings(ctx context.Context, userID string) (*model.Settings, error) {
+	panic(fmt.Errorf("not implemented: GetSettings - getSettings"))
 }
 
 // Mutation returns MutationResolver implementation.

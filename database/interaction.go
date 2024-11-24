@@ -22,6 +22,18 @@ func (r *PostgresRepository) GetUserData(ctx context.Context, userID string) (*m
 	return user, nil
 }
 
+func (r *PostgresRepository) CreateUser(ctx context.Context, user *model.User) error {
+	query := `INSERT INTO users (name, username, email) VALUES ($1, $2, $3) RETURNING id`
+	err := r.DB.QueryRowContext(ctx, query, user.Name, user.Username, user.Email).Scan(&user.ID)
+	return err
+}
+
+func (r *PostgresRepository) AddFriend(ctx context.Context, userID string, friendID string) error {
+	query := `INSERT INTO friends (user_id, friend_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`
+	_, err := r.DB.ExecContext(ctx, query, userID, friendID)
+	return err
+}
+
 func (r *PostgresRepository) GetFriends(ctx context.Context, userID string) ([]*model.User, error) {
 	query := `SELECT u.id, u.name, u.username, u.email 
               FROM users u
@@ -44,6 +56,7 @@ func (r *PostgresRepository) GetFriends(ctx context.Context, userID string) ([]*
 	return friends, nil
 }
 
+// Settings Operations
 func (r *PostgresRepository) GetSettings(ctx context.Context, userID string) (*model.Settings, error) {
 	query := `SELECT theme, notifications FROM settings WHERE user_id = $1`
 	settings := &model.Settings{}
@@ -90,4 +103,11 @@ func (r *PostgresRepository) GetDMs(ctx context.Context, userID string, friendID
 		messages = append(messages, message)
 	}
 	return messages, nil
+}
+
+func (r *PostgresRepository) SendDM(ctx context.Context, message *model.Message) error {
+	query := `INSERT INTO messages (sender_id, receiver_id, content, timestamp) 
+              VALUES ($1, $2, $3, $4) RETURNING id`
+	err := r.DB.QueryRowContext(ctx, query, message.SenderID, message.ReceiverID, message.Content, message.Timestamp).Scan(&message.ID)
+	return err
 }
